@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ApiKeysApi.Middleware;
 
@@ -21,7 +22,12 @@ public class RequestLoggingMiddleware
         context.Request.Body.Position = 0;
 
         var remoteIpAddress = context.Connection.RemoteIpAddress;
-        var requestInfo = $"Request: {context.Request.Method} {context.Request.Path} - Body: {requestBody} - Remote IP: {remoteIpAddress}";
+        var requestInfo = $"Request: {context.Request.Method} {context.Request.Path} - Remote IP: {remoteIpAddress}";
+        
+        if (!requestBody.IsNullOrEmpty())
+        {
+            requestInfo += $" - Body: {requestBody}";
+        }
 
         _logger.LogInformation(requestInfo);
 
