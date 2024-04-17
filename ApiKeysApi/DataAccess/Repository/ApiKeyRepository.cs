@@ -23,43 +23,22 @@ public class ApiKeyRepository : IApiKeyRepository
     {
         return await _dbContext.ApiKeys.FirstOrDefaultAsync(a => a.ApiKeyHash == apiKeyHash);
     }
-    
+
     public async Task AddApiKeyAsync(ApiKey apiKey)
     {
-        try
-        {
-            await _dbContext.ApiKeys.AddAsync(apiKey);
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (DbUpdateException e)
-        {
-            throw new DbUpdateException("Failed to add API key", e);
-        }
+        await _dbContext.ApiKeys.AddAsync(apiKey);
+        await _dbContext.SaveChangesAsync();
     }
-    
+
     public async Task UpdateApiKeyAsync(ApiKey apiKey)
     {
-        try
-        {
-            _dbContext.ApiKeys.Update(apiKey);
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (DbUpdateException e)
-        {
-            throw new DbUpdateException("Failed to update API key", e);
-        }
+        _dbContext.ApiKeys.Update(apiKey);
+        await _dbContext.SaveChangesAsync();
     }
-    
+
     public async Task DeleteApiKeyAsync(ApiKey apiKey)
     {
-        try
-        {
-            _dbContext.ApiKeys.Remove(apiKey);
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (DbUpdateException e)
-        {
-            throw new DbUpdateException("Failed to delete API key", e);
-        }
+        _dbContext.ApiKeys.Remove(apiKey);
+        await _dbContext.SaveChangesAsync();
     }
 }
