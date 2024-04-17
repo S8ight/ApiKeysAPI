@@ -14,52 +14,31 @@ public class ApiKeyController : ControllerBase
     {
         _apiKeyService = apiKeyService;
     }
-    
+
     [HttpGet("{key}")]
     public async Task<IActionResult> GetApiKeyByHash(string key)
     {
-        try
-        {
-            var apiKey = await _apiKeyService.GetApiKeyByHashAsync(key);
-
-            if (apiKey == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(apiKey);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        var apiKey = await _apiKeyService.GetApiKeyByHashAsync(key);
+        
+        return Ok(apiKey);
     }
-    
+
+
     [HttpPost]
     public async Task<IActionResult> PostApiKey([FromBody] ApiKeyRequest apiKeyRequest)
     {
-        try
-        {
-           var apiKey = await _apiKeyService.AddApiKeyAsync(apiKeyRequest);
-            return Ok(apiKey);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        var apiKey = await _apiKeyService.AddApiKeyAsync(apiKeyRequest);
+        
+        return Ok(apiKey);
     }
-    
+
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateApiKey(int id, [FromBody] ApiKeyUpdateRequest apiKeyUpdateRequest)
     {
-        try
-        {
-            await _apiKeyService.UpdateAlbumAsync(id, apiKeyUpdateRequest);
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        await _apiKeyService.UpdateAlbumAsync(id, apiKeyUpdateRequest);
+        
+        return Ok();
     }
+
 }
