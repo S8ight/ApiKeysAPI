@@ -8,5 +8,5 @@ public interface IApiKeyService
     Task<ApiKey> GetApiKeyByIdAsync(int id);
     Task<ApiKey> GetApiKeyByHashAsync(string apiKeyHash);
     Task<string> AddApiKeyAsync(ApiKeyRequest apiKeyRequest);
-    Task UpdateAlbumAsync(int id, ApiKeyUpdateRequest request);
+    Task UpdateApiKeyAsync(int id, ApiKeyUpdateRequest request);
 }

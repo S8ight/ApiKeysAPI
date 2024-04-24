@@ -55,7 +55,7 @@ public class ApiKeyService : IApiKeyService
         return apiKey.ApiKeyHash;
     }
 
-    public async Task UpdateAlbumAsync(int id, ApiKeyUpdateRequest request)
+    public async Task UpdateApiKeyAsync(int id, ApiKeyUpdateRequest request)
     {
         var existingApiKey = await _apiKeyRepository.GetApiKeyByIdAsync(id);
 

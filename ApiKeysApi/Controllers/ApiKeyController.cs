@@ -36,7 +36,7 @@ public class ApiKeyController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateApiKey(int id, [FromBody] ApiKeyUpdateRequest apiKeyUpdateRequest)
     {
-        await _apiKeyService.UpdateAlbumAsync(id, apiKeyUpdateRequest);
+        await _apiKeyService.UpdateApiKeyAsync(id, apiKeyUpdateRequest);
         
         return Ok();
     }
