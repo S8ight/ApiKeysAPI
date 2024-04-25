@@ -13,11 +13,10 @@ public class RedisRateLimitService : IRateLimitService
         _redis = redis;
     }
 
-    public async Task<bool> IsRequestAllowed(string apiKey, int rateLimitSecond, int rateLimitMinute, int rateLimitHour,
-        int rateLimitDay)
+    public async Task<bool> IsRequestAllowed(string apiKey, int rateLimitSecond, int rateLimitMinute, int rateLimitHour, int rateLimitDay)
     {
         var db = _redis.GetDatabase();
-        var tasks = new List<Task<bool>>();
+        var results = new List<bool>();
 
         var periods = new[]
         {
@@ -31,20 +30,33 @@ public class RedisRateLimitService : IRateLimitService
         {
             var key = $"ratelimit:{apiKey}:{period.Interval.TotalSeconds}";
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            
+
+            if (!await db.KeyExistsAsync(key))
+            {
+                await db.SortedSetAddAsync(key, "init", double.MinValue);
+                await db.KeyExpireAsync(key, period.Interval);
+            }
+
             var tran = db.CreateTransaction();
-            tran.AddCondition(Condition.KeyExists(key));
-            
+
             _ = tran.SortedSetAddAsync(key, now.ToString(), now);
             _ = tran.SortedSetRemoveRangeByScoreAsync(key, double.NegativeInfinity, now - period.Interval.TotalSeconds);
             var countTask = tran.SortedSetLengthAsync(key);
             _ = tran.KeyExpireAsync(key, period.Interval);
-            
-            tasks.Add(tran.ExecuteAsync().ContinueWith(t => countTask.Result <= period.Limit));
+
+            bool executed = await tran.ExecuteAsync();
+            if (!executed)
+            {
+                results.Add(false);
+                continue;
+            }
+
+            long currentCount = await countTask;
+            results.Add(currentCount <= period.Limit);
         }
-        
-        var results = await Task.WhenAll(tasks);
+
         return results.All(result => result);
     }
-
 }
+
+
