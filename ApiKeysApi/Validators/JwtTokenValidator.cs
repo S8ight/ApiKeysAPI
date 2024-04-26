@@ -28,23 +28,19 @@ public class JwtTokenValidator : IJwtTokenValidator
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = GetValidationParameters();
 
-
-        var principal = tokenHandler.ValidateToken(token, validationParameters, out var securityToken);
-
-        if (securityToken is JwtSecurityToken jwtSecurityToken)
+        try
         {
-            if (jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                    StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new ValidationResponse { IsValid = true };
-            }
+            tokenHandler.ValidateToken(token, validationParameters, out _);
+            return new ValidationResponse { IsValid = true };
         }
-
-        return new ValidationResponse
+        catch (Exception)
         {
-            FailedReason = "Invalid token",
-            StatusCode = (int)HttpStatusCode.Unauthorized
-        };
+            return new ValidationResponse
+            {
+                FailedReason = "Invalid token",
+                StatusCode = (int)HttpStatusCode.Unauthorized
+            };
+        }
     }
 
     private TokenValidationParameters GetValidationParameters()

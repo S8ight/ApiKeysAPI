@@ -27,17 +27,17 @@ public class ApiKeyValidator : IApiKeyValidator
 
         if (_apiKey == null)
         {
-            return CreateErrorResponse("Invalid Api Key", HttpStatusCode.Unauthorized);
+            return await CreateErrorResponseAsync("Invalid Api Key", HttpStatusCode.Unauthorized);
         }
         
         if (_apiKey.Status != StatusEnum.Active)
         {
-            return CreateErrorResponse("ApiKey is not active", HttpStatusCode.Unauthorized);
+            return await CreateErrorResponseAsync("ApiKey is not active", HttpStatusCode.Unauthorized);
         }
         
         if (_apiKey.ExpirationDate.HasValue && _apiKey.ExpirationDate.Value < DateTime.UtcNow)
         {
-            return CreateErrorResponse("ApiKey has expired", HttpStatusCode.Unauthorized);
+            return await CreateErrorResponseAsync("ApiKey has expired", HttpStatusCode.Unauthorized);
         }
 
         if (_apiKey.Environment.HasValue)
@@ -45,12 +45,12 @@ public class ApiKeyValidator : IApiKeyValidator
             EnvironmentEnum currentEnvEnum;
             if (!Enum.TryParse(_env.EnvironmentName, true, out currentEnvEnum))
             {
-                return CreateErrorResponse("Invalid environment configuration", HttpStatusCode.InternalServerError);
+                 return await CreateErrorResponseAsync("Invalid environment configuration", HttpStatusCode.InternalServerError);
             }
 
             if (_apiKey.Environment.Value != currentEnvEnum)
             {
-                return CreateErrorResponse("ApiKey is not valid for the current environment", HttpStatusCode.Unauthorized);
+                return await CreateErrorResponseAsync("ApiKey is not valid for the current environment", HttpStatusCode.Unauthorized);
             }
         }
 
@@ -59,7 +59,7 @@ public class ApiKeyValidator : IApiKeyValidator
             var ipWhitelist = new HashSet<string?>(_apiKey.AccessIpWhitelist.Split(';'));
             if (!ipWhitelist.Contains(ipAddress))
             {
-                return CreateErrorResponse("Request IP is not whitelisted", HttpStatusCode.Unauthorized);
+                return await CreateErrorResponseAsync("Request IP is not whitelisted", HttpStatusCode.Unauthorized);
             }
 
         }
@@ -69,7 +69,7 @@ public class ApiKeyValidator : IApiKeyValidator
 
         if (!isAllowed)
         {
-            return CreateErrorResponse("Rate limit exceeded", HttpStatusCode.TooManyRequests);
+            return await CreateErrorResponseAsync("Rate limit exceeded", HttpStatusCode.TooManyRequests);
         }
         
         _apiKey.LastUsedAt = DateTime.UtcNow;
@@ -78,13 +78,13 @@ public class ApiKeyValidator : IApiKeyValidator
         return new ValidationResponse { IsValid = true };
     }
     
-    private ValidationResponse CreateErrorResponse(string message, HttpStatusCode statusCode)
+    private async Task<ValidationResponse> CreateErrorResponseAsync(string message, HttpStatusCode statusCode)
     {
         if (_apiKey != null)
         {
             _apiKey.FailedAttempts++;
             _apiKey.LastUsedAt = DateTime.UtcNow;
-            _apiKeyRepository.UpdateApiKeyAsync(_apiKey);
+            await _apiKeyRepository.UpdateApiKeyAsync(_apiKey);
         }
 
         return new ValidationResponse
