@@ -16,7 +16,12 @@ namespace ApiKeysApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    AccessToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,8 +66,8 @@ namespace ApiKeysApi.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                column: "Id",
-                value: 1);
+                columns: new[] { "Id", "AccessToken", "CreatedAt", "Password", "Role", "UserName" },
+                values: new object[] { 1, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "$2a$12$mBXrsuF73vv6qFovuE8tEOvBhABgHgcvgoTJU8lHoY3UgMgT7O622", 1, "OrdinaryUser" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ApiKeys_UserId",
