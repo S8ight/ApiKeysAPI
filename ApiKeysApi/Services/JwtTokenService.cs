@@ -49,7 +49,7 @@ public class JwtTokenService : ITokenService
 
         var accessToken = tokenHandler.WriteToken(token);
 
-        _logger.LogInformation("Access token created for user, id: {UserId}", user.Id);
+        _logger.LogInformation("Access token created for user: {UserName}", user.UserName);
 
         return accessToken;
     }
