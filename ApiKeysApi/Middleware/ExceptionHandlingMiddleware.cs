@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using ApiKeysApi.DTOs.Response;
+using Newtonsoft.Json;
 
 namespace ApiKeysApi.Middleware;
 
@@ -29,19 +30,22 @@ public class ExceptionHandlingMiddleware
     }
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        context.Response.ContentType = "application/json";
-        
-        switch (exception)
+        if (!context.Response.HasStarted)
         {
-            case KeyNotFoundException _:
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                break;
-            case UnauthorizedAccessException _:
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                break;
-            default:
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                break;
+            context.Response.ContentType = "application/json";
+        
+            switch (exception)
+            {
+                case KeyNotFoundException _:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    break;
+                case UnauthorizedAccessException _:
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    break;
+                default:
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    break;
+            }
         }
 
         var response = new ErrorResponse
@@ -49,8 +53,12 @@ public class ExceptionHandlingMiddleware
             StatusCode = context.Response.StatusCode,
             Message = exception.Message
         };
-        
-        _logger.LogError(exception.Message,"Error occured: ");
-        await context.Response.WriteAsync(response.ToString());
+    
+        _logger.LogError(exception, "Error occurred: ");
+    
+        if (!context.Response.HasStarted)
+        {
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
+        }
     }
 }
